@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import Image from "next/image";
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -36,12 +37,24 @@ export default function LanguageToggle({
   }
 
   return (
-    <button
-      type="button"
-      onClick={onToggle}
-      className="rounded-full border border-zinc-700 px-3 py-1 text-xs uppercase tracking-[0.3em] text-zinc-200 transition hover:border-zinc-500"
-    >
-      {label}
-    </button>
+    <div className="flex items-center gap-2">
+      <span className="inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-white px-3 py-1 text-xs uppercase tracking-[0.24em] text-zinc-900">
+        <Image
+          src={currentLang === "fr" ? "/flags/fr.svg" : "/flags/en.svg"}
+          alt={currentLang === "fr" ? "France" : "United Kingdom"}
+          width={22}
+          height={16}
+          priority
+        />
+        <span className="sr-only">{currentLang}</span>
+      </span>
+      <button
+        type="button"
+        onClick={onToggle}
+        className="rounded-full border border-zinc-700 px-3 py-1 text-xs uppercase tracking-[0.24em] text-zinc-200 transition hover:border-zinc-500"
+      >
+        {label}
+      </button>
+    </div>
   );
 }

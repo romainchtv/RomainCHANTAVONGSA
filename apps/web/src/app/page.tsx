@@ -9,6 +9,10 @@ type Copy = {
   name: string;
   projectTitle: string;
   projectPlaceholder: string;
+  aboutTitle: string;
+  aboutBody: string;
+  experienceTitle: string;
+  experiences: { role: string; place: string; period: string }[];
   contactTitle: string;
   contactSubtitle: string;
   switchLabel: string;
@@ -30,6 +34,10 @@ const copy: Record<Lang, Copy> = {
     name: "Romain Chantavongsa",
     projectTitle: "Mon projet",
     projectPlaceholder: "A completer.",
+    aboutTitle: "A propos de moi",
+    aboutBody: "A completer.",
+    experienceTitle: "Experiences",
+    experiences: [],
     contactTitle: "Contact",
     contactSubtitle: "Laisse ton message, je reviens vers toi rapidement.",
     switchLabel: "EN",
@@ -49,6 +57,10 @@ const copy: Record<Lang, Copy> = {
     name: "Romain Chantavongsa",
     projectTitle: "My project",
     projectPlaceholder: "To be completed.",
+    aboutTitle: "About me",
+    aboutBody: "To be completed.",
+    experienceTitle: "Experience",
+    experiences: [],
     contactTitle: "Contact",
     contactSubtitle: "Leave a message and I will get back to you soon.",
     switchLabel: "FR",
@@ -120,6 +132,41 @@ export default async function Home(props: {
           <p className="mt-2 text-sm text-zinc-400">
             {t.projectPlaceholder}
           </p>
+        </section>
+
+        <section id="about" className="rounded-2xl border border-zinc-800 p-6">
+          <h2 className="text-lg font-semibold">{t.aboutTitle}</h2>
+          <p className="mt-2 text-sm text-zinc-400">
+            {t.aboutBody}
+          </p>
+        </section>
+
+        <section id="experience" className="rounded-2xl border border-zinc-800 p-6">
+          <h2 className="text-lg font-semibold">{t.experienceTitle}</h2>
+          {t.experiences.length === 0 ? (
+            <p className="mt-2 text-sm text-zinc-400">
+              {lang === "fr" ? "A completer." : "To be completed."}
+            </p>
+          ) : (
+            <div className="mt-4 grid gap-3">
+              {t.experiences.map((item) => (
+                <div
+                  key={`${item.role}-${item.place}`}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-zinc-800 bg-zinc-950/30 px-4 py-3 text-sm"
+                >
+                  <div className="flex flex-col">
+                    <span className="font-medium text-zinc-100">
+                      {item.role}
+                    </span>
+                    <span className="text-zinc-400">{item.place}</span>
+                  </div>
+                  <span className="text-xs uppercase tracking-[0.2em] text-zinc-500">
+                    {item.period}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         <section id="contact" className="rounded-2xl border border-zinc-800 p-6">
