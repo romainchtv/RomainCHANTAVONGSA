@@ -1,0 +1,69 @@
+﻿name: ci
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  web-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install Dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build Web
+        run: pnpm --filter web build
+
+  docker-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image (dev)
+        run: docker build -f apps/web/Dockerfile.dev -t portfolio-web-dev .
+
+      - name: Build Docker Image (prod)
+        run: docker build -f apps/web/Dockerfile -t portfolio-web-prod .
+
+  docker-compose-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start Compose (dev)
+        run: docker compose -f docker-compose.dev.yml up -d
+
+      - name: Wait For Web
+        run: |
+          for i in {1..30}; do
+            if curl -sSf http://localhost:3000 >/dev/null; then
+              echo "Web is up";
+              exit 0;
+            fi
+            sleep 2
+          done
+          echo "Web failed to start";
+          docker compose -f docker-compose.dev.yml logs --tail=200
+          exit 1
+
+      - name: Stop Compose
+        if: always()
+        run: docker compose -f docker-compose.dev.yml down -v

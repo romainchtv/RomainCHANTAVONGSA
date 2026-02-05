@@ -25,7 +25,8 @@
       - node_modules:/repo/node_modules
       - web_node_modules:/repo/apps/web/node_modules
     depends_on:
-      - db
+      db:
+        condition: service_healthy
   db:
     image: mysql:8.4
     environment:
@@ -33,6 +34,11 @@
       - MYSQL_USER=portfolio
       - MYSQL_PASSWORD=portfolio
       - MYSQL_ROOT_PASSWORD=root
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     ports:
       - "3306:3306"
     volumes:
@@ -47,7 +53,8 @@
       - PMA_USER=portfolio
       - PMA_PASSWORD=portfolio
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
 volumes:
   db_data:
