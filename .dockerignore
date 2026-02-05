@@ -1,0 +1,18 @@
+﻿# Ignore node_modules and build outputs
+**/node_modules
+**/.next
+**/dist
+**/build
+**/.expo
+**/.turbo
+
+# VCS
+.git
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store

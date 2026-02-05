@@ -1,0 +1,17 @@
+﻿services:
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile.dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_TELEMETRY_DISABLED=1
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      - WATCHPACK_POLLING_INTERVAL=1000
+    volumes:
+      - .:/repo
+      - /repo/node_modules
+      - /repo/apps/web/node_modules
