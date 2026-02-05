@@ -7,3 +7,36 @@
       - "3000:3000"
     environment:
       - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=portfolio
+      - DB_PASSWORD=portfolio
+      - DB_NAME=portfolio
+    depends_on:
+      - db
+  db:
+    image: mysql:8.4
+    environment:
+      - MYSQL_DATABASE=portfolio
+      - MYSQL_USER=portfolio
+      - MYSQL_PASSWORD=portfolio
+      - MYSQL_ROOT_PASSWORD=root
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d
+  phpmyadmin:
+    image: phpmyadmin:5
+    ports:
+      - "8080:80"
+    environment:
+      - PMA_HOST=db
+      - PMA_USER=portfolio
+      - PMA_PASSWORD=portfolio
+    depends_on:
+      - db
+
+volumes:
+  db_data:
