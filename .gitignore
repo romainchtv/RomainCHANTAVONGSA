@@ -33,4 +33,7 @@ Thumbs.db
 *.swo
 *.code-workspace
 
+# Uploads
+apps/web/public/uploads/
+
 .pnpm-store

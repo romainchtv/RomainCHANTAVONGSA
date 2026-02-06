@@ -1,6 +1,13 @@
 ﻿import ContactForm from "./components/ContactForm";
 import LanguageToggle from "./components/LanguageToggle";
 import { headers } from "next/headers";
+import {
+  fetchAbout,
+  fetchEducation,
+  fetchExperiences,
+  fetchProjects,
+  fetchSkills
+} from "@/app/lib/content";
 
 type Lang = "fr" | "en";
 
@@ -12,7 +19,9 @@ type Copy = {
   aboutTitle: string;
   aboutBody: string;
   experienceTitle: string;
-  experiences: { role: string; place: string; period: string }[];
+  skillsTitle: string;
+  educationTitle: string;
+  emptyLabel: string;
   contactTitle: string;
   contactSubtitle: string;
   switchLabel: string;
@@ -32,12 +41,14 @@ const copy: Record<Lang, Copy> = {
   fr: {
     title: "Portfolio",
     name: "Romain Chantavongsa",
-    projectTitle: "Mon projet",
+    projectTitle: "Mes projets",
     projectPlaceholder: "A completer.",
     aboutTitle: "A propos de moi",
     aboutBody: "A completer.",
     experienceTitle: "Experiences",
-    experiences: [],
+    skillsTitle: "Competences",
+    educationTitle: "Formation",
+    emptyLabel: "A completer.",
     contactTitle: "Contact",
     contactSubtitle: "Laisse ton message, je reviens vers toi rapidement.",
     switchLabel: "EN",
@@ -55,12 +66,14 @@ const copy: Record<Lang, Copy> = {
   en: {
     title: "Portfolio",
     name: "Romain Chantavongsa",
-    projectTitle: "My project",
+    projectTitle: "Projects",
     projectPlaceholder: "To be completed.",
     aboutTitle: "About me",
     aboutBody: "To be completed.",
     experienceTitle: "Experience",
-    experiences: [],
+    skillsTitle: "Skills",
+    educationTitle: "Education",
+    emptyLabel: "To be completed.",
     contactTitle: "Contact",
     contactSubtitle: "Leave a message and I will get back to you soon.",
     switchLabel: "FR",
@@ -87,13 +100,21 @@ function pickLang(
 
   const cookieLang = headerList
     ?.get("cookie")
-    ?.match(/(?:^|;\\s*)lang=([^;]+)/)?.[1];
+    ?.match(/(?:^|;\s*)lang=([^;]+)/)?.[1];
   if (cookieLang === "en" || cookieLang === "fr") {
     return cookieLang;
   }
 
   const acceptLang = headerList?.get("accept-language") ?? "";
   return acceptLang.toLowerCase().startsWith("fr") ? "fr" : "en";
+}
+
+function formatDate(value: unknown) {
+  if (!value) return "";
+  const date =
+    value instanceof Date ? value : new Date(String(value));
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toISOString().slice(0, 7);
 }
 
 export default async function Home(props: {
@@ -103,6 +124,15 @@ export default async function Home(props: {
   const headerList = await headers();
   const lang: Lang = pickLang(searchParams, headerList);
   const t = copy[lang];
+  const currentLabel = lang === "fr" ? "Aujourd hui" : "Present";
+
+  const [about, experiences, projects, skills, education] = await Promise.all([
+    fetchAbout(lang),
+    fetchExperiences(lang),
+    fetchProjects(lang),
+    fetchSkills(lang),
+    fetchEducation(lang)
+  ]);
 
   return (
     <div className="relative min-h-screen bg-[#0B0C0F] text-zinc-100">
@@ -129,40 +159,157 @@ export default async function Home(props: {
 
         <section id="projects" className="rounded-2xl border border-zinc-800 p-6">
           <h2 className="text-lg font-semibold">{t.projectTitle}</h2>
-          <p className="mt-2 text-sm text-zinc-400">
-            {t.projectPlaceholder}
-          </p>
+          {projects.length === 0 ? (
+            <p className="mt-2 text-sm text-zinc-400">
+              {t.projectPlaceholder}
+            </p>
+          ) : (
+            <div className="mt-4 grid gap-3">
+              {projects.map((project) => (
+                <article
+                  key={project.id}
+                  className="rounded-xl border border-zinc-800 bg-zinc-950/30 p-4"
+                >
+                  {project.image_url ? (
+                    <a
+                      href={project.image_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group relative mb-3 block overflow-hidden rounded-lg border border-zinc-800"
+                    >
+                      <img
+                        src={project.image_url}
+                        alt={project.title}
+                        className="h-40 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                      <span className="absolute right-3 top-3 rounded-full bg-black/70 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-white">
+                        Zoom
+                      </span>
+                    </a>
+                  ) : null}
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="text-base font-semibold">
+                      {project.title}
+                    </h3>
+                    {project.url ? (
+                      <a
+                        className="text-xs uppercase tracking-[0.2em] text-zinc-400 hover:text-zinc-200"
+                        href={project.url}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Link
+                      </a>
+                    ) : null}
+                  </div>
+                  {project.subtitle ? (
+                    <p className="mt-1 text-sm text-zinc-400">
+                      {project.subtitle}
+                    </p>
+                  ) : null}
+                  {project.description ? (
+                    <p className="mt-2 text-sm text-zinc-300">
+                      {project.description}
+                    </p>
+                  ) : null}
+                  {project.stack ? (
+                    <p className="mt-2 text-xs uppercase tracking-[0.2em] text-zinc-500">
+                      {project.stack}
+                    </p>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          )}
         </section>
 
         <section id="about" className="rounded-2xl border border-zinc-800 p-6">
           <h2 className="text-lg font-semibold">{t.aboutTitle}</h2>
           <p className="mt-2 text-sm text-zinc-400">
-            {t.aboutBody}
+            {about ?? t.aboutBody}
           </p>
         </section>
 
         <section id="experience" className="rounded-2xl border border-zinc-800 p-6">
           <h2 className="text-lg font-semibold">{t.experienceTitle}</h2>
-          {t.experiences.length === 0 ? (
-            <p className="mt-2 text-sm text-zinc-400">
-              {lang === "fr" ? "A completer." : "To be completed."}
-            </p>
+          {experiences.length === 0 ? (
+            <p className="mt-2 text-sm text-zinc-400">{t.emptyLabel}</p>
           ) : (
             <div className="mt-4 grid gap-3">
-              {t.experiences.map((item) => (
+              {experiences.map((item) => (
                 <div
-                  key={`${item.role}-${item.place}`}
+                  key={item.id}
                   className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-zinc-800 bg-zinc-950/30 px-4 py-3 text-sm"
                 >
                   <div className="flex flex-col">
                     <span className="font-medium text-zinc-100">
                       {item.role}
                     </span>
-                    <span className="text-zinc-400">{item.place}</span>
+                    <span className="text-zinc-400">{item.company}</span>
+                    {item.location ? (
+                      <span className="text-zinc-500">{item.location}</span>
+                    ) : null}
                   </div>
                   <span className="text-xs uppercase tracking-[0.2em] text-zinc-500">
-                    {item.period}
+                    {formatDate(item.start_date)}
+                    {item.start_date || item.end_date ? " - " : ""}
+                    {item.is_current ? currentLabel : formatDate(item.end_date)}
                   </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section id="skills" className="rounded-2xl border border-zinc-800 p-6">
+          <h2 className="text-lg font-semibold">{t.skillsTitle}</h2>
+          {skills.length === 0 ? (
+            <p className="mt-2 text-sm text-zinc-400">{t.emptyLabel}</p>
+          ) : (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {skills.map((skill) => (
+                <span
+                  key={skill.id}
+                  className="rounded-full border border-zinc-800 bg-zinc-950/30 px-3 py-1 text-xs text-zinc-200"
+                >
+                  {skill.name}
+                  {skill.level ? ` · ${skill.level}` : ""}
+                </span>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section id="education" className="rounded-2xl border border-zinc-800 p-6">
+          <h2 className="text-lg font-semibold">{t.educationTitle}</h2>
+          {education.length === 0 ? (
+            <p className="mt-2 text-sm text-zinc-400">{t.emptyLabel}</p>
+          ) : (
+            <div className="mt-4 grid gap-3">
+              {education.map((item) => (
+                <div
+                  key={item.id}
+                  className="rounded-xl border border-zinc-800 bg-zinc-950/30 px-4 py-3 text-sm"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-col">
+                      <span className="font-medium text-zinc-100">
+                        {item.school}
+                      </span>
+                      <span className="text-zinc-400">
+                        {item.degree ?? ""} {item.field ?? ""}
+                      </span>
+                    </div>
+                    <span className="text-xs uppercase tracking-[0.2em] text-zinc-500">
+                      {formatDate(item.start_date)}
+                      {item.start_date || item.end_date ? " - " : ""}
+                      {formatDate(item.end_date)}
+                    </span>
+                  </div>
+                  {item.description ? (
+                    <p className="mt-2 text-zinc-400">{item.description}</p>
+                  ) : null}
                 </div>
               ))}
             </div>

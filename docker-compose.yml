@@ -13,6 +13,9 @@
       - DB_USER=portfolio
       - DB_PASSWORD=portfolio
       - DB_NAME=portfolio
+      - ADMIN_USER=admin
+      - ADMIN_PASSWORD=change-me
+      - ADMIN_SECRET=change-me-secret
     depends_on:
       db:
         condition: service_healthy

@@ -17,6 +17,9 @@
       - DB_USER=portfolio
       - DB_PASSWORD=portfolio
       - DB_NAME=portfolio
+      - ADMIN_USER=admin
+      - ADMIN_PASSWORD=change-me
+      - ADMIN_SECRET=change-me-secret
     command: >
       sh -c "CI=true pnpm install --no-frozen-lockfile --config.confirmModulesDir=false &&
       pnpm --filter web dev --hostname 0.0.0.0 --port 3000"

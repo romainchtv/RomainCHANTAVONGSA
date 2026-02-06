@@ -1,4 +1,4 @@
-FROM node:20-alpine
+﻿FROM mcr.microsoft.com/devcontainers/typescript-node:20
 
 WORKDIR /repo
 
