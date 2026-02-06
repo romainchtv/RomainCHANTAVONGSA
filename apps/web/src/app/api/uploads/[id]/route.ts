@@ -26,7 +26,12 @@ export async function GET(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    return new NextResponse(file.data, {
+    const body = file.data.buffer.slice(
+      file.data.byteOffset,
+      file.data.byteOffset + file.data.byteLength
+    );
+
+    return new NextResponse(body, {
       status: 200,
       headers: {
         "Content-Type": file.mime,
