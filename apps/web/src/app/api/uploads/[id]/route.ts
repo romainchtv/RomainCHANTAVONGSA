@@ -26,10 +26,7 @@ export async function GET(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    const body = file.data.buffer.slice(
-      file.data.byteOffset,
-      file.data.byteOffset + file.data.byteLength
-    );
+    const body = new Uint8Array(file.data);
 
     return new NextResponse(body, {
       status: 200,
